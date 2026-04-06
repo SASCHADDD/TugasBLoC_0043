@@ -21,5 +21,12 @@ class OrderSuccess extends OrderState {
     required this.jumlahMinuman,
     required this.totalHarga,
   });
-  
+
+  Map<String, dynamic> toMap() => {
+    'makanan': makanan,
+    'minuman': minuman,
+    'jumlahMakanan': jumlahMakanan,
+    'jumlahMinuman': jumlahMinuman,
+    'totalHarga': totalHarga,
+  };
 
