@@ -14,4 +14,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthError(message: 'Email atau password salah'));
     }
   }
+  Future<void> _onRegisterSubmitted(
+    RegisterSubmitted event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (event.email.isNotEmpty && event.password.isNotEmpty && event
+        .name.isNotEmpty) {
+      emit(AuthRegistered());
+    } else {
+      emit(AuthError(message: 'Semua field harus diisi'));
+    }
+  }
 
