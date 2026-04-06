@@ -30,3 +30,16 @@ class OrderSuccess extends OrderState {
     'totalHarga': totalHarga,
   };
 
+@override
+  List<Object?> get props => [
+    makanan, minuman, jumlahMakanan, jumlahMinuman, totalHarga
+  ];
+}
+
+class OrderError extends OrderState {
+  final String message;
+  OrderError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
