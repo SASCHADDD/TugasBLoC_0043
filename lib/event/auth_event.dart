@@ -1,6 +1,6 @@
 part of '../bloc/auth_bloc.dart';
 
-abstract class AuthEvent extends Equatable {  
+abstract class AuthEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
@@ -9,7 +9,7 @@ class LoginSubmitted extends AuthEvent {
   final String email;
   final String password;
 
-  const LoginSubmitted({required this.email, required this.password});
+  LoginSubmitted({required this.email, required this.password});
 
   @override
   List<Object?> get props => [email, password];
@@ -20,7 +20,7 @@ class RegisterSubmitted extends AuthEvent {
   final String email;
   final String password;
 
-  const RegisterSubmitted({
+  RegisterSubmitted({
     required this.name,
     required this.email,
     required this.password,
@@ -29,4 +29,5 @@ class RegisterSubmitted extends AuthEvent {
   @override
   List<Object?> get props => [name, email, password];
 }
+
 class LogoutRequested extends AuthEvent {}
