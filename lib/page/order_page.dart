@@ -10,225 +10,261 @@ class OrderPage extends StatefulWidget {
 }
 
 class _OrderPageState extends State<OrderPage> {
+  final TextEditingController makananController = TextEditingController();  
+  final TextEditingController minumanController = TextEditingController();
+  final TextEditingController jumlahMakananController = TextEditingController();
+  final TextEditingController jumlahMinumanController = TextEditingController();
+  int totalHarga = 0;
+
   final _formKey = GlobalKey<FormState>();
-  String? _selectedFood;
-  String? _selectedDrink;
-  int _foodQuantity = 1;
-  int _drinkQuantity = 1;
 
-  final List<String> _foods = [
-    'Nasi Goreng',
-    'Mie Goreng',
-    'Ayam Bakar',
-    'Sate Ayam'
-  ];
-  final List<String> _drinks = ['Es Teh', 'Es Jeruk', 'Kopi', 'Air Mineral'];
-
-  final Map<String, int> _prices = {
-    'Nasi Goreng': 15000,
-    'Mie Goreng': 12000,
-    'Ayam Bakar': 20000,
-    'Sate Ayam': 18000,
-    'Es Teh': 5000,
-    'Es Jeruk': 7000,
-    'Kopi': 8000,
-    'Air Mineral': 4000,
-  };
-
-  void _submitOrder() {
-    if (_formKey.currentState!.validate()) {
-      int total = (_prices[_selectedFood] ?? 0) * _foodQuantity +
-          (_prices[_selectedDrink] ?? 0) * _drinkQuantity;
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DetailOrderPage(
-            orderData: {
-              'makanan': _selectedFood,
-              'jumlahMakanan': _foodQuantity,
-              'minuman': _selectedDrink,
-              'jumlahMinuman': _drinkQuantity,
-              'totalHarga': total,
-            },
-          ),
-        ),
-      );
-    }
+  void calculateTotalPrice() {
+    int jumlahMakanan = int.tryParse(jumlahMakananController.text) ?? 0;
+    int jumlahMinuman = int.tryParse(jumlahMinumanController.text) ?? 0;
+    
+    setState(() {
+      totalHarga = (jumlahMakanan * 32000) + (jumlahMinuman * 5000);
+    });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return MainLayout(
-      title: 'New Order',
-      showAppBar: true,
-      child: Container(
-        color: MainLayout.backgroundColor,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildSectionTitle('Select Food'),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: _selectedFood,
-                    decoration: _inputDecoration(
-                        'Food Item', Icons.restaurant_menu_rounded),
-                    items: _foods.map((food) {
-                      return DropdownMenuItem(
-                        value: food,
-                        child: Text(food),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedFood = value;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null) return 'Please select your food';
-                      return null;
-                    },
+  void dispose() {
+    makananController.dispose();
+    minumanController.dispose();
+    jumlahMakananController.dispose();
+    jumlahMinumanController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildInputDecoration({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    required String? errorMessage,
+  }){
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: MainLayout.labelColor),
+        prefixIcon: Icon(icon, color: MainLayout.primaryColor),
+        filled: true,
+        fillColor: MainLayout.inputFillColor,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: MainLayout.inputBorderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: MainLayout.primaryColor, width: 2),
+        ),
+        errorText: errorMessage,
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return errorMessage;
+        }
+        return null;
+      },
+    );
+  }
+
+
+  @override
+Widget build(BuildContext context) {
+  return MainLayout(
+    title: 'Order Menu',
+    showAppBar: true,
+    child: Container(
+      color: MainLayout.backgroundColor,
+      height: double.infinity,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0,
+              vertical: 32.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'What would you like to have?',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: MainLayout.textTitleColor,
                   ),
-                  const SizedBox(height: 16),
-                  _buildQuantitySelector('Food Quantity', _foodQuantity, (val) {
-                    setState(() {
-                      _foodQuantity = val;
-                    });
-                  }),
-                  const SizedBox(height: 32),
-                  _buildSectionTitle('Select Drink'),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: _selectedDrink,
-                    decoration: _inputDecoration(
-                        'Drink Item', Icons.local_drink_rounded),
-                    items: _drinks.map((drink) {
-                      return DropdownMenuItem(
-                        value: drink,
-                        child: Text(drink),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedDrink = value;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null) return 'Please select your drink';
-                      return null;
-                    },
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Fill in the details below to complete your order.'
+                      ,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: MainLayout.textSubTitleColor,
                   ),
-                  const SizedBox(height: 16),
-                  _buildQuantitySelector('Drink Quantity', _drinkQuantity,
-                      (val) {
-                    setState(() {
-                      _drinkQuantity = val;
-                    });
-                  }),
-                  const SizedBox(height: 48),
-                  ElevatedButton(
-                    onPressed: () {
-                      _submitOrder();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: MainLayout.primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                ),
+                const SizedBox(height: 32),
+
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.fastfood_rounded, color:
+                              MainLayout.accentOrange),
+                          SizedBox(width: 8),
+                          Text(
+                            'Food Details',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: MainLayout.textTitleColor,
+                            ),
+                          ),
+                        ],
                       ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Review Order',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.0,
+                     const SizedBox(height: 16),
+                      _buildInputDecoration(
+                        controller: makananController,
+                        label: 'Food Name',
+                        icon: Icons.lunch_dining_rounded,
+                        errorMessage: 'Please enter your food order',
                       ),
+                      const SizedBox(height: 16),
+                      _buildInputDecoration(
+                        controller: jumlahMakananController,
+                        label: 'Quantity (Food)',
+                        icon: Icons.format_list_numbered_rounded,
+                        keyboardType: TextInputType.number,
+                        errorMessage: 'Please enter food quantity',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.local_drink_rounded, color:
+                              Colors.blue),
+                          SizedBox(width: 8),
+                          Text(
+                            'Drink Details',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: MainLayout.textTitleColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildInputDecoration(
+                        controller: minumanController,
+                        label: 'Drink Name',
+                        icon: Icons.coffee_rounded,
+                        errorMessage: 'Please enter your drink order'
+                            ,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildInputDecoration(
+                        controller: jumlahMinumanController,
+                        label: 'Quantity (Drink)',
+                        icon: Icons.format_list_numbered_rounded,
+                        keyboardType: TextInputType.number,
+                        errorMessage: 'Please enter drink quantity',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 48),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      calculateTotalPrice();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailOrderPage(
+                            jumlahMakanan: jumlahMakananController
+                                .text,
+                            jumlahMinuman: jumlahMinumanController
+                                .text,
+                            makanan: makananController.text,
+                            minuman: minumanController.text,
+                            totalHarga: totalHarga,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 18
+                        ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    backgroundColor: MainLayout.primaryColor,
+                    foregroundColor: Colors.white,
+                    elevation: 2,
+                    shadowColor: MainLayout.primaryColor.withOpacity
+                        (0.5),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.receipt_long_rounded),
+                      SizedBox(width: 8),
+                      Text(
+                        'Place Order',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: MainLayout.textTitleColor,
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String label, IconData icon) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: MainLayout.labelColor),
-      prefixIcon: Icon(icon, color: MainLayout.primaryColor),
-      filled: true,
-      fillColor: MainLayout.inputFillColor,
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: MainLayout.inputBorderColor),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: MainLayout.primaryColor, width: 2),
-      ),
-    );
-  }
-
-  Widget _buildQuantitySelector(
-      String label, int value, Function(int) onChanged) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: MainLayout.textSubTitleColor,
-            fontSize: 15,
-          ),
-        ),
-        Row(
-          children: [
-            IconButton(
-              onPressed: value > 1 ? () => onChanged(value - 1) : null,
-              icon: const Icon(
-                Icons.remove_circle_outline_rounded,
-                color: MainLayout.primaryColor,
-              ),
-            ),
-            Text(
-              '$value',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            IconButton(
-              onPressed: () => onChanged(value + 1),
-              icon: const Icon(
-                Icons.add_circle_outline_rounded,
-                color: MainLayout.primaryColor,
-              ),
-            ),
-          ],
-        ),
-      ],
+      )
     );
   }
 }
